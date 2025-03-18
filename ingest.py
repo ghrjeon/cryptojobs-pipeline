@@ -31,7 +31,7 @@ for source in job_sources:
     python_scripts.append({
         "script": f"scrape/clean_{source}.py",
         "args": [],
-        "critical": False  # Can continue if this fails
+        "critical": False  
     })
 
 # Add all infer scripts with no arguments
@@ -39,7 +39,7 @@ for source in job_sources:
     python_scripts.append({
         "script": f"infer/infer.py",
         "args": [],
-        "critical": False  # Can continue if this fails
+        "critical": False  
     })
 
 # Track overall success
