@@ -35,12 +35,12 @@ for source in job_sources:
     })
 
 # Add all infer scripts with no arguments
-for source in job_sources:
-    python_scripts.append({
+python_scripts.append({
         "script": f"infer/infer.py",
         "args": [],
         "critical": True  
     })
+
 
 # Track overall success
 success = True
