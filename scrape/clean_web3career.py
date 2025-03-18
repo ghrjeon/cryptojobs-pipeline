@@ -5,6 +5,7 @@ import ast
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import numpy as np
+from datetime import datetime
 
 load_dotenv()
 
@@ -65,8 +66,9 @@ def clean_job_data(df):
 
 def main():
 
-    
-    response = supabase.storage.from_('jobs-raw').download('web3career.json')
+    filename = 'web3career.json' + datetime.now().strftime('%Y-%m-%d')
+
+    response = supabase.storage.from_('jobs-raw').download(filename)
     jobs = json.loads(response.decode('utf-8'))
     
     

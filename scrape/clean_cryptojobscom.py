@@ -127,7 +127,9 @@ def clean_job_data(df):
 
 def main():
 
-    response = supabase.storage.from_('jobs-raw').download('cryptojobs.json')
+    filename = 'cryptojobscom.json' + datetime.now().strftime('%Y-%m-%d')
+
+    response = supabase.storage.from_('jobs-raw').download(filename)
     jobs = json.loads(response.decode('utf-8'))
     
     print(f"Loaded {len(jobs)} jobs")
