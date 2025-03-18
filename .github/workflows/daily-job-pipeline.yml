@@ -18,15 +18,11 @@ jobs:
         with:
           python-version: '3.9'
           
-      - name: Install specific Chrome version
-        run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt-get update
-          # Install Chrome 114 instead of latest
-          wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
-          sudo apt install ./google-chrome-stable_114.0.5735.90-1_amd64.deb
-          google-chrome --version  # Verify installed version
+      - name: Setup Chrome and ChromeDriver
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+          install-chromedriver: true
       
       - name: Install dependencies
         run: |

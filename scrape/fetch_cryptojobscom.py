@@ -42,19 +42,25 @@ class CryptoJobsComFetcher:
             chrome_version = self.get_chrome_version()
             self.logger.info(f"Chrome version: {chrome_version}")
             
-            # Always try to get matching ChromeDriver version
             try:
-                # Remove old ChromeDriver if exists
-                if os.path.exists("/usr/local/bin/chromedriver"):
-                    self.logger.info("Removing old ChromeDriver")
-                    os.system("rm /usr/local/bin/chromedriver")
+                # Check if we're in GitHub Actions environment
+                if 'GITHUB_ACTIONS' in os.environ:
+                    # Use ChromeDriver installed by the GitHub Action
+                    self.logger.info("Running in GitHub Actions, using pre-installed ChromeDriver")
+                    service = Service('chromedriver')
+                else:
+                    # Local development - install specific ChromeDriver version
+                    if os.path.exists("/usr/local/bin/chromedriver"):
+                        self.logger.info("Removing old ChromeDriver")
+                        os.system("rm /usr/local/bin/chromedriver")
+                    
+                    self.logger.info("Installing specific ChromeDriver version")
+                    service = Service(ChromeDriverManager(version="114.0.5735.90").install())
                 
-                # Install specific ChromeDriver version known to be stable
-                self.logger.info("Installing specific ChromeDriver version (114.0.5735.90)")
-                service = Service(ChromeDriverManager(version="114.0.5735.90").install())
-                self.logger.info("Successfully installed ChromeDriver version 114.0.5735.90")
+                self.logger.info("ChromeDriver setup completed")
+                
             except Exception as e:
-                self.logger.error(f"Failed to install ChromeDriver: {e}")
+                self.logger.error(f"Failed to setup ChromeDriver: {e}")
                 raise
 
             self.driver = webdriver.Chrome(service=service, options=options)
