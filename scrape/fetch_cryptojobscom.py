@@ -49,9 +49,10 @@ class CryptoJobsComFetcher:
                     self.logger.info("Removing old ChromeDriver")
                     os.system("rm /usr/local/bin/chromedriver")
                 
-                # Install matching ChromeDriver without specifying version
-                service = Service(ChromeDriverManager().install())
-                self.logger.info("Successfully installed matching ChromeDriver")
+                # Install specific ChromeDriver version known to be stable
+                self.logger.info("Installing specific ChromeDriver version (114.0.5735.90)")
+                service = Service(ChromeDriverManager(version="114.0.5735.90").install())
+                self.logger.info("Successfully installed ChromeDriver version 114.0.5735.90")
             except Exception as e:
                 self.logger.error(f"Failed to install ChromeDriver: {e}")
                 raise
