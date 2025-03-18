@@ -23,7 +23,7 @@ for source in job_sources:
     python_scripts.append({
         "script": f"scrape/fetch_{source}.py", 
         "args": ["--max_pages", str(max_pages)],
-        "critical": True  # Mark as critical if failure should stop the pipeline
+        "critical": True 
     })
 
 # Add all clean scripts with no arguments
@@ -31,7 +31,7 @@ for source in job_sources:
     python_scripts.append({
         "script": f"scrape/clean_{source}.py",
         "args": [],
-        "critical": False  
+        "critical": True  
     })
 
 # Add all infer scripts with no arguments
@@ -39,7 +39,7 @@ for source in job_sources:
     python_scripts.append({
         "script": f"infer/infer.py",
         "args": [],
-        "critical": False  
+        "critical": True  
     })
 
 # Track overall success
