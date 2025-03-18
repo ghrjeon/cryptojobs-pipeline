@@ -244,19 +244,19 @@ def main():
         
         # Convert jobs to JSON string
         jobs_json = json.dumps(jobs).encode('utf-8')
+
+        filename = 'cryptojobscom.json' + datetime.now().strftime('%Y-%m-%d')
         
         # Upload to Supabase storage 
         try:
             response = supabase.storage.from_('jobs-raw').upload(
-                'cryptojobscom.json', 
+                filename, 
                 jobs_json, 
                 {'upsert': 'true'}
             )
             fetcher.logger.info(f"Successfully uploaded data to Supabase storage: {response}")
         except Exception as upload_error:
             fetcher.logger.error(f"Error uploading to Supabase: {upload_error}")
-            # Fallback to local save if upload fails
-            fetcher.save_to_json(jobs, 'cryptojobscom.json')
 
     except Exception as e:
         fetcher.logger.error(f"Error fetching jobs: {e}")
