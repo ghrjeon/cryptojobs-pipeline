@@ -55,13 +55,14 @@ for script_info in python_scripts:
     logger.info(f"Running: {' '.join(command)}")
     
     try:
-        result = subprocess.run(command, check=False, capture_output=True, text=True)
+        # Run the subprocess with stdout and stderr directed to the parent process
+        # This allows real-time logging while still capturing the return code
+        result = subprocess.run(command, check=False)
         
         if result.returncode == 0:
             logger.info(f"Successfully finished {script_name}")
         else:
             logger.error(f"Error running {script_name}, return code: {result.returncode}")
-            logger.error(f"Error output: {result.stderr}")
             
             if is_critical:
                 logger.critical(f"Critical script {script_name} failed - stopping pipeline")
