@@ -14,11 +14,11 @@ Checkout the platform which uses this pipeline: https://rosalyn-cryptojobs-ai.ve
 
 The pipeline consists of:
 
-1. **Fetch Scripts**: Selenium-based web scrapers that collect job listings from different sources.
-2. **Clean Scripts**: Data processing scripts that clean and standardize the collected data.
-4. **Infer Script**: Utilizes embeddings, scikit-learn, and LLM for job data processing and text inference.
-3. **Ingest Script**: Main orchestration script that runs all fetch, clean, and infer scripts in sequence.
-
+📌 **Fetch Scripts**: Selenium-based web scrapers that collect job listings from different sources. <br>
+📌 **Clean Scripts**: Data processing scripts that clean and standardize the collected data. <br>
+📌 **Infer Script**: Utilizes embeddings, scikit-learn, and LLM for job data processing and text inference. <br>
+📌 **Ingest Script**: Main orchestration script that runs all fetch, clean, and infer scripts in sequence. <br>
+ 
 GitHub Actions Workflow: pipeline runs every day at 6:00 PM EST 
 
 # Directory Structure  
