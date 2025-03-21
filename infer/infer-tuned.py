@@ -208,64 +208,7 @@ def infer_job_function(df):
     df['job_function'] = "Unknown"
     df = df.reset_index(drop=True)
 
-    # Resorting to key words matching for now because LLM is insufficient and needs some fine tuning! 
-    # First use key words matching to infer job function
-    
-    data_keywords = ["Data", "Analytics", "Data Scientist", "Data Engineer", "Data Analyst", 
-                     "Analytics Engineer", "Quantitative Researcher", "Business Intelligence"]
-    data_keywords = set(k.lower() for k in data_keywords)
-
-    engineering_keywords = ["Engineer", "developer", "DevOps", "Software", "Frontend", 
-                            "Backend", "Full Stack", "Blockchain", "Smart Contract",
-                            "solidity", "rust", "blockchain developer",
-                            "blockchain engineer",
-                            "Product", "Product Manager", "Product Owner", "Product Manager/Owner",
-                            "Research Engineer", "QA Engineer", 
-                            "Project Manager", "Technical Lead","Dev", "Cryptograph" ,
-                            "qa", "system"]
-    engineering_keywords = set(k.lower() for k in engineering_keywords)
-
-    business_keywords = ["Business", "Strategy", "Operations", "Sales", "Marketing",
-                         "Growth", "Partnerships", "Community", "Content", "Social Media",
-                         "Customer Success", "Account Management", "Legal", "Compliance",
-                         "HR", "People Operations", "Finance", "Accounting", "Administrative",
-                         "Support", "Officer","Solutions", "Copywriter", "account",
-                         "finance", "general", "executive", "financial", "tax", "treasury",
-                         "payroll", "Program", "writer", "Event", "recruit", "representative",
-                         "customer","auditor", ]
-    business_keywords = set(k.lower() for k in business_keywords)
-    
-    design_keywords = ["Designer", "Design", "Art", "Creative", "UI/UX", "Graphic",
-                       "Motion", "Visual",  "Animation", "3D", "Video"]
-    design_keywords = set(k.lower() for k in design_keywords)
-
-    
     for index, row in df.iterrows():
-        # Clean the title 
-        title = row['title'].lower()
-        title = re.sub(r"\s*\(.*?\)", "", title).strip()
-        title = title.replace("(", "").replace(")", "").strip()
-        title = title.replace("/", "").strip()
-        title = title.split(",")[0]
-        title = title.split("-")[0]
-
-        # Match in priority order: Data -> Engineering -> Business -> Art
-        if any(keyword in title for keyword in data_keywords):
-            df.loc[index, 'job_function'] = "Data and Analytics"
-        elif any(keyword in title for keyword in engineering_keywords):
-            df.loc[index, 'job_function'] = "Engineering, Product, and Research"
-        elif any(keyword in title for keyword in business_keywords):
-            df.loc[index, 'job_function'] = "Business, Strategy, and Operations"
-        elif any(keyword in title for keyword in design_keywords):
-            df.loc[index, 'job_function'] = "Design, Art, and Creative"
-        else:
-            df.loc[index, 'job_function'] = "Unknown"
-
-    jobs_to_process = df[df['job_function'] == "Unknown"]
-    jobs_to_process = jobs_to_process.reset_index(drop=True)
-    print(f"Jobs to process with AI: {len(jobs_to_process)}")
-
-    for index, row in jobs_to_process.iterrows():
         # Clean the title 
         title = row['title'].lower()
         title = re.sub(r"\s*\(.*?\)", "", title).strip()
@@ -275,75 +218,21 @@ def infer_job_function(df):
         title = title.split("-")[0]
         # print(title)
 
-        prompt = f"""
-        You are an expert HR professional specializing in Web3 and blockchain industry job classifications.
-        Focus on the core role/function and ignore modifiers like "Senior", "Lead", "Junior", "Head of", "Director", etc.
-
-        ### Job Function Categories:
-
-        1. Engineering, Product, and Research
-           - Any Software Engineering role (Frontend, Backend, Full Stack)
-           - Blockchain Developer/Engineer
-           - Smart Contract Developer/Engineer
-           - Protocol Engineer
-           - Security Engineer
-           - DevOps Engineer
-           - Technical Lead/Architect
-           - Product Manager/Owner
-           - Research Engineer
-           - QA Engineer
-           - Solutions Engineer
-
-        2. Business, Strategy, and Operations
-           - Business Development
-           - Operations
-           - Project Manager
-           - Account Manager
-           - Community Manager
-           - Program Manager
-           - Legal/Compliance
-           - HR/People Operations
-           - Finance/Accounting
-           - Administrative/Support
-
-        3. Data and Analytics
-           - Data Scientist
-           - Data Engineer
-           - Data Analyst
-           - Business Intelligence
-           - Quantitative Researcher
-           - Analytics Engineer
-
-        4. Design, Art, and Creative
-           - UI/UX Designer
-           - Product Designer
-           - Graphic Designer
-           - Creative Director
-           - Motion Designer
-           - Web Designer
-
-        Job Title to Categorize: {title}
-
-        Output Format: Return ONLY the category name of one of the following:
-        Engineering, Product, and Research
-        Business, Strategy, and Operations
-        Data and Analytics
-        Design, Art, and Creative
-        """
-
         response = aiClient.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
+            model="ft:gpt-3.5-turbo-0125:personal::BDcfvLEE",
+            messages=[
+                {"role": "user", "content": f"You are an expert HR professional specializing in Web3 and blockchain industry job classifications. \\\
+                Job Title: {title} \n\nJob Function:"}
+            ]
         )
-        jobs_to_process.loc[index, 'job_function'] = response.choices[0].message.content.strip()
+        df.loc[index, 'job_function'] = response.choices[0].message.content.strip()
 
     # Combine the processed jobs with the rest of the dataframe
-    jobs_to_process['job_function'].replace("- ", "", inplace=True)
-    df = pd.concat([df[df['job_function'] != "Unknown"], jobs_to_process]).reset_index(drop=True)
     
     job_function_list = ['Engineering, Product, and Research', 'Business, Strategy, and Operations', 'Data and Analytics', 'Design, Art, and Creative']
     df['job_function'] = df['job_function'].apply(lambda x: x if x in job_function_list else 'Unknown')
-    df = df[df['job_function'] != 'Unknown']
+    print("jobs processed:", len(df[df['job_function'] != 'Unknown']))
+    print("unknown jobs:", len(df[df['job_function'] == 'Unknown']))
 
     return df
 
