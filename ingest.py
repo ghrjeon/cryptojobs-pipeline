@@ -36,7 +36,7 @@ for source in job_sources:
 
 # Add all infer scripts with no arguments
 python_scripts.append({
-        "script": f"infer/infer.py",
+        "script": f"infer/infer-tuned.py",
         "args": [],
         "critical": True  
     })
