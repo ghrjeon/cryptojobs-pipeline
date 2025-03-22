@@ -219,9 +219,10 @@ def infer_job_function(df):
         # print(title)
 
         response = aiClient.chat.completions.create(
-            model="ft:gpt-3.5-turbo-0125:personal::BDcfvLEE",
+            model="ft:gpt-3.5-turbo-0125:personal::BDiM7gWS",
             messages=[
-                {"role": "user", "content": f"You are an expert HR professional specializing in Web3 and blockchain industry job classifications. \\\
+                {"role": "user", "content": 
+                f"You are an expert HR professional specializing in job function classifications. \\\
                 Job Title: {title} \n\nJob Function:"}
             ]
         )
