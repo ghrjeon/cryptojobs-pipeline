@@ -23,7 +23,8 @@ jobs:
         with:
           chrome-version: stable
           install-chromedriver: true
-      
+          chromedriver-version: 134.0.6998.165
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
