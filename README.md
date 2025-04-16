@@ -31,7 +31,7 @@ GitHub Actions Workflow: pipeline runs every day at 6:00 PM EST
       │   ├── clean_web3career.py
       │   └── fetch_cryptojobscom.py  
       ├── infer                         # Data processing and inference using OpenAI & Scikit-learn
-      │   └── index.js infer.py                  
+      │   └── infer.py                  
       ├── ingest.py                     # Script to run all pipeline components            
       └── requirements.txt              # Dependencies 
 
