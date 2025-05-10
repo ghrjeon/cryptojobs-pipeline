@@ -21,7 +21,7 @@ jobs:
       - name: Setup Chrome and ChromeDriver
         uses: browser-actions/setup-chrome@v1
         with:
-          chrome-version: 134.0.6998.165
+          chrome-version: 136.0.7103.59
           install-chromedriver: true
           no-sudo: true
 
