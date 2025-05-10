@@ -21,6 +21,10 @@ The pipeline consists of:
  
 GitHub Actions Workflow: pipeline runs every day at 6:00 PM EST 
 
+** LLM Finetuning in development. <br>
+** Currently employing infer-mixed.py, which uses keywords matching + finetuned model. <br>
+**Next steps**: conduct model evaluation and optimize inference. 
+
 # Directory Structure  
       .
       ├── .github/workflows             # Defines orchestration 
@@ -31,7 +35,9 @@ GitHub Actions Workflow: pipeline runs every day at 6:00 PM EST
       │   ├── clean_web3career.py
       │   └── fetch_cryptojobscom.py  
       ├── infer                         # Data processing and inference using OpenAI & Scikit-learn
-      │   └── index.js infer.py                  
+      │   ├── infer.py                  # keyword matching + gpt-4o-mini
+      │   ├── infer-tuned.py            # finetuned model
+      │   └── infer-mixed.py            # keyword matching + finetuned model
       ├── ingest.py                     # Script to run all pipeline components            
       └── requirements.txt              # Dependencies 
 
@@ -45,4 +51,3 @@ GitHub Actions Workflow: pipeline runs every day at 6:00 PM EST
 - Numpy 1.24.4
 - API Keys (PandasAI, OpenAI, Supabase) <br>
   
-
