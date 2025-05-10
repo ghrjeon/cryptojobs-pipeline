@@ -49,13 +49,9 @@ class CryptoJobsComFetcher:
                     self.logger.info("Running in GitHub Actions, using pre-installed ChromeDriver")
                     service = Service('chromedriver')
                 else:
-                    # Local development - install specific ChromeDriver version
-                    if os.path.exists("/usr/local/bin/chromedriver"):
-                        self.logger.info("Removing old ChromeDriver")
-                        os.system("rm /usr/local/bin/chromedriver")
-                    
-                    self.logger.info("Installing specific ChromeDriver version")
-                    service = Service(ChromeDriverManager(version="134.0.6998.165").install())
+                    # Local development - use ChromeDriverManager
+                    self.logger.info("Running locally, using ChromeDriverManager")
+                    service = Service(ChromeDriverManager().install())
                 
                 self.logger.info("ChromeDriver setup completed")
                 
