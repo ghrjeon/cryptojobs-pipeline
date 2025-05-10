@@ -33,6 +33,7 @@ jobs:
           unzip -o chromedriver_linux64.zip
           chmod +x chromedriver
           sudo mv chromedriver /usr/local/bin/
+          chromedriver --version
       
       - name: Install dependencies
         run: |
