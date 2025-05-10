@@ -19,10 +19,7 @@ jobs:
           python-version: '3.9'
           
       - name: Setup Chrome
-        uses: nanasess/setup-chromedriver@v2
-        with:
-          chrome-version: stable
-          install-dependencies: true
+        uses: browser-actions/setup-chrome@v1
 
       - name: Install dependencies
         run: |
