@@ -23,8 +23,7 @@ jobs:
         with:
           chrome-version: 134.0.6998.165
           install-chromedriver: true
-          chromedriver-version: 134.0.6998.165
-          cache: false  # Disable caching to ensure fresh installation
+          no-sudo: true
 
       - name: Install dependencies
         run: |
