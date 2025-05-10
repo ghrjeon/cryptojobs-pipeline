@@ -39,7 +39,7 @@ class Web3CareerFetcher:
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-software-rasterizer')
         
-        self.logger.info("Initializing CryptoJobsComFetcher with headless Chrome")
+        self.logger.info("Initializing Web3CareerFetcher with headless Chrome")
         
         try:
             # Get Chrome version
@@ -51,7 +51,7 @@ class Web3CareerFetcher:
                 if 'GITHUB_ACTIONS' in os.environ:
                     # Use ChromeDriver installed by the GitHub Action
                     self.logger.info("Running in GitHub Actions, using ChromeDriver from nanasess/setup-chromedriver")
-                    service = Service('/usr/local/bin/chromedriver')
+                    service = Service('chromedriver')
                 else:
                     # Local development - use ChromeDriverManager
                     self.logger.info("Running locally, using ChromeDriverManager")
