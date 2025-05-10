@@ -56,7 +56,7 @@ class Web3CareerFetcher:
                         os.system("rm /usr/local/bin/chromedriver")
                     
                     self.logger.info("Installing specific ChromeDriver version")
-                    service = Service(ChromeDriverManager(version="136.0.7103.93").install())
+                    service = Service(ChromeDriverManager().install())
                 
                 self.logger.info("ChromeDriver setup completed")
                 
