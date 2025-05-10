@@ -21,10 +21,18 @@ jobs:
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Display ChromeDriver and Chrome versions
+      - name: Verify Chrome installation
         run: |
-          chromedriver --version
+          echo "Chrome binary location:"
+          which google-chrome
+          echo "Chrome version:"
           google-chrome --version
+          echo "Python version:"
+          python --version
+          echo "pip version:"
+          pip --version
+          echo "webdriver-manager version:"
+          pip show webdriver-manager
 
       - name: Install dependencies
         run: |

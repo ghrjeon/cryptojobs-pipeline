@@ -48,8 +48,14 @@ class Web3CareerFetcher:
             
             # Always use webdriver_manager to get the correct ChromeDriver version
             self.logger.info("Using webdriver_manager to install matching ChromeDriver")
-            service = Service(ChromeDriverManager().install())
-            self.logger.info("ChromeDriver setup completed")
+            try:
+                driver_path = ChromeDriverManager().install()
+                self.logger.info(f"ChromeDriver installed at: {driver_path}")
+                service = Service(driver_path)
+                self.logger.info("ChromeDriver setup completed")
+            except Exception as e:
+                self.logger.error(f"Failed to install ChromeDriver: {e}")
+                raise
 
             self.driver = webdriver.Chrome(service=service, options=options)
             self.logger.info("Chrome driver initialized successfully")
@@ -61,19 +67,26 @@ class Web3CareerFetcher:
     def get_chrome_version(self) -> str:
         """Get the installed Chrome version"""
         try:
+            self.logger.info("Attempting to detect Chrome version...")
             # macOS
             if os.path.exists("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"):
+                self.logger.info("Detected macOS Chrome installation")
                 output = subprocess.check_output([
                     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
                     "--version"
                 ]).decode()
-                return output.strip().split()[-1]
+                version = output.strip().split()[-1]
+                self.logger.info(f"macOS Chrome version: {version}")
+                return version
             # Linux
             elif os.path.exists("/usr/bin/google-chrome"):
+                self.logger.info("Detected Linux Chrome installation")
                 output = subprocess.check_output(["google-chrome", "--version"]).decode()
-                return output.strip().split()[-1]
+                version = output.strip().split()[-1]
+                self.logger.info(f"Linux Chrome version: {version}")
+                return version
             else:
-                self.logger.warning("Could not detect Chrome version")
+                self.logger.warning("Could not detect Chrome installation")
                 return None
         except Exception as e:
             self.logger.error(f"Error getting Chrome version: {e}")
