@@ -20,6 +20,9 @@ jobs:
           
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
+        with:
+          install-chromedriver: true
+          no-sudo: true
 
       - name: Install dependencies
         run: |
