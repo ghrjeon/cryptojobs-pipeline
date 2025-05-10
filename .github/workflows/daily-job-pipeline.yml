@@ -18,23 +18,12 @@ jobs:
         with:
           python-version: '3.9'
           
-      - name: Setup Chrome and ChromeDriver
-        uses: browser-actions/setup-chrome@v1
+      - name: Setup Chrome
+        uses: nanasess/setup-chromedriver@v2
         with:
-          install-chromedriver: true
-          no-sudo: true
+          chrome-version: stable
+          install-dependencies: true
 
-      - name: Install ChromeDriver
-        run: |
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
-          wget -N "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}"
-          CHROMEDRIVER_VERSION=$(cat "LATEST_RELEASE_${CHROME_VERSION}")
-          wget -N "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
-          unzip -o chromedriver_linux64.zip
-          chmod +x chromedriver
-          sudo mv chromedriver /usr/local/bin/
-          chromedriver --version
-      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

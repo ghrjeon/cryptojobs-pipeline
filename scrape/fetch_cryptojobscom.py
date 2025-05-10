@@ -49,7 +49,7 @@ class CryptoJobsComFetcher:
                 # Check if we're in GitHub Actions environment
                 if 'GITHUB_ACTIONS' in os.environ:
                     # Use ChromeDriver installed by the GitHub Action
-                    self.logger.info("Running in GitHub Actions, using system ChromeDriver")
+                    self.logger.info("Running in GitHub Actions, using ChromeDriver from nanasess/setup-chromedriver")
                     service = Service('/usr/local/bin/chromedriver')
                 else:
                     # Local development - use ChromeDriverManager
