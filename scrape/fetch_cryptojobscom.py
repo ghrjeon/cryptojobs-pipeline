@@ -34,9 +34,6 @@ class CryptoJobsComFetcher:
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-extensions')
-        options.add_argument('--disable-software-rasterizer')
         
         self.logger.info("Initializing CryptoJobsComFetcher with headless Chrome")
         
@@ -45,11 +42,27 @@ class CryptoJobsComFetcher:
             chrome_version = self.get_chrome_version()
             self.logger.info(f"Chrome version: {chrome_version}")
             
-            # Always use webdriver_manager to get the correct ChromeDriver version
-            self.logger.info("Using webdriver_manager to install matching ChromeDriver")
-            service = Service(ChromeDriverManager().install())
-            self.logger.info("ChromeDriver setup completed")
+            try:
+                # Check if we're in GitHub Actions environment
+                if 'GITHUB_ACTIONS' in os.environ:
+                    # Use ChromeDriver installed by the GitHub Action
+                    self.logger.info("Running in GitHub Actions, using pre-installed ChromeDriver")
+                    service = Service('chromedriver')
+                else:
+                    # Local development - install specific ChromeDriver version
+                    if os.path.exists("/usr/local/bin/chromedriver"):
+                        self.logger.info("Removing old ChromeDriver")
+                        os.system("rm /usr/local/bin/chromedriver")
+                    
+                    self.logger.info("Installing specific ChromeDriver version")
+                    service = Service(ChromeDriverManager(version="134.0.6998.165").install())
                 
+                self.logger.info("ChromeDriver setup completed")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to setup ChromeDriver: {e}")
+                raise
+
             self.driver = webdriver.Chrome(service=service, options=options)
             self.logger.info("Chrome driver initialized successfully")
             
