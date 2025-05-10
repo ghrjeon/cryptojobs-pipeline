@@ -45,23 +45,11 @@ class CryptoJobsComFetcher:
             chrome_version = self.get_chrome_version()
             self.logger.info(f"Chrome version: {chrome_version}")
             
-            try:
-                # Check if we're in GitHub Actions environment
-                if 'GITHUB_ACTIONS' in os.environ:
-                    # Use ChromeDriver installed by the GitHub Action
-                    self.logger.info("Running in GitHub Actions, using ChromeDriver from nanasess/setup-chromedriver")
-                    service = Service('chromedriver')
-                else:
-                    # Local development - use ChromeDriverManager
-                    self.logger.info("Running locally, using ChromeDriverManager")
-                    service = Service(ChromeDriverManager().install())
+            # Always use webdriver_manager to get the correct ChromeDriver version
+            self.logger.info("Using webdriver_manager to install matching ChromeDriver")
+            service = Service(ChromeDriverManager().install())
+            self.logger.info("ChromeDriver setup completed")
                 
-                self.logger.info("ChromeDriver setup completed")
-                
-            except Exception as e:
-                self.logger.error(f"Failed to setup ChromeDriver: {e}")
-                raise
-
             self.driver = webdriver.Chrome(service=service, options=options)
             self.logger.info("Chrome driver initialized successfully")
             
