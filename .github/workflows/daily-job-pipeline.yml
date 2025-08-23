@@ -21,9 +21,9 @@ jobs:
       - name: Setup Chrome and ChromeDriver
         uses: browser-actions/setup-chrome@v1
         with:
-          chrome-version: '136.0.7103.113'
+          chrome-version: '139.0.7258.127'
           install-chromedriver: true
-          chromedriver-version: '136.0.7103.113'
+          chromedriver-version: '139.0.7258.127'
           cache: false  # Disable caching to ensure fresh installation
 
       - name: Install dependencies
