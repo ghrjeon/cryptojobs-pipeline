@@ -65,12 +65,14 @@ def calculate_job_similarity(df1: pd.DataFrame, df2: pd.DataFrame):
     # Ensure all columns are strings
     df1["title"] = df1["title"].fillna("").astype(str)
     df1["company"] = df1["company"].fillna("").astype(str)
+    df1["posted_date"] = df1["posted_date"].fillna("").astype(str)
     df2["title"] = df2["title"].fillna("").astype(str)
     df2["company"] = df2["company"].fillna("").astype(str)
+    df2["posted_date"] = df2["posted_date"].fillna("").astype(str)
 
     # Combine title, company, and posted date into a single column for identification
-    df1["combined"] = df1["title"] + " " + df1["company"]
-    df2["combined"] = df2["title"] + " " + df2["company"] 
+    df1["combined"] = df1["title"] + " " + df1["company"] + " " + df1["posted_date"]
+    df2["combined"] = df2["title"] + " " + df2["company"] + " " + df2["posted_date"]
 
     # Get embeddings for the combined columns   
     df1['embedding'] = df1['combined'].apply(get_embedding)
