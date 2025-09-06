@@ -288,7 +288,7 @@ def infer_job_function(df):
 
     job_function_list = ['Engineering, Product, and Research', 'Business, Strategy, and Operations', 'Data and Analytics', 'Design, Art, and Creative']
     df['job_function'] = df['job_function'].apply(lambda x: x if x in job_function_list else 'Unknown')
-    df = df[df['job_function'] != 'Unknown']
+    # df = df[df['job_function'] != 'Unknown']
 
     return df
 
