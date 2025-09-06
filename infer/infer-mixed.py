@@ -330,7 +330,8 @@ def upload_to_supabase(df, table_name: str):
 def get_job_latest_data(table_name: str) -> pd.DataFrame:
     response = (
         supabase.table(table_name)
-        .select("*")
+        .select('*')
+        .gte('ingestion_date', '2025-07-01')  
         .execute()
     )
     df = pd.DataFrame(response.data)
@@ -349,9 +350,6 @@ def get_job_latest_data(table_name: str) -> pd.DataFrame:
     # # Filter the dataframe to only include the latest date
     # df = df[df['ingestion_date'] >= latest_date - pd.Timedelta(days=10)]
 
-
-    # Filter the dataframe to only include the latest date
-    print(f"Latest ingestion date: {latest_date}")
 
     return df
 
