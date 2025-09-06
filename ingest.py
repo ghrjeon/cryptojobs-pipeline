@@ -10,7 +10,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-max_pages = 50
+max_pages = 20
 
 # Define job sources
 job_sources = ["web3career", "cryptojobscom"]  
