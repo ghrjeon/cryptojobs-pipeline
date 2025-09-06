@@ -113,7 +113,7 @@ def clean_job_data(df):
     df['title'] = df['title'].replace('"', '')
     df['title'] = df['title'].replace("'", '')
 
-    df = df.drop_duplicates(subset=['job_id'])
+    df = df.drop_duplicates(subset=['job_id','company'])
 
     # Select columns and handle any potential problematic values
     df = df[['title', 'company', 'location', 'salary_amount', 'skills', 'source', 'job_url', 

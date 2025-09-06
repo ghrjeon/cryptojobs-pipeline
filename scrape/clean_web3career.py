@@ -57,7 +57,7 @@ def clean_job_data(df):
     df['posted_datetime'] = pd.to_datetime(df['posted_datetime']).dt.strftime('%Y-%m-%d')
     df['ingestion_date'] = pd.to_datetime(df['ingestion_date']).dt.strftime('%Y-%m-%d')
 
-    df = df.drop_duplicates(subset=['job_id'])
+    df = df.drop_duplicates(subset=['job_id','company'])
 
     df = df[['title', 'company', 'location', 'salary_amount', 'skills', 'source', 'job_url', 
              'job_id', 'posted_datetime', 'is_remote', 'ingestion_date']]
