@@ -349,9 +349,10 @@ def get_job_latest_data(table_name: str) -> pd.DataFrame:
     # df.to_csv(f'{table_name}.csv', index=False)
 
     # For incremental ingestion 
-    latest_date = df['ingestion_date'].max()
+    latest_date = pd.to_datetime(df['ingestion_date'].max())
     print(f"Latest ingestion date: {latest_date}")
-    # Filter the dataframe to only include the latest date
+    # Filter the dataframe to only include posts from the last 5 days
+    df['posted_datetime'] = pd.to_datetime(df['posted_datetime'])
     df = df[df['posted_datetime'] > latest_date - pd.Timedelta(days=5)]
 
 
