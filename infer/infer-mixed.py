@@ -27,6 +27,8 @@ def main():
     df1 = get_job_latest_data(job_sources[0])
     df2 = get_job_latest_data(job_sources[1])
 
+    df1.to_csv('df1.csv', index=False)
+    df2.to_csv('df2.csv', index=False)
     print("\nDataset 1 size:", len(df1))
     print("Dataset 2 size:", len(df2))
 
@@ -48,6 +50,8 @@ def main():
     # Select columns to keep
     combined_df = combined_df[['title', 'job_function','company', 'location','salary_amount', 'skills', 'source', 'job_url', 'job_id', 
                                'posted_date', 'is_remote',  'ingestion_date', 'my_id']].sort_values(by='posted_date', ascending=False)
+
+    combined_df = combined_df.drop_duplicates(subset=['my_id'], keep='last')
 
     # Upload to supabase
     upload_to_supabase(combined_df, "jobs_clean")
@@ -302,7 +306,7 @@ def clean_data(df):
     # Add ingestion date and job ids
     df['ingestion_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
     df['job_id'] = df['job_id'].astype(int)
-    df['my_id'] = df['ingestion_date'].astype(str) + "-" + df['job_id'].astype(str)
+    df['my_id'] = df['posted_datetime'].astype(str) + "-" + df['job_id'].astype(str)
 
     # Replace infinities with None
     df['salary_amount'] = df['salary_amount'].replace([np.inf, -np.inf], pd.NA)  
@@ -315,32 +319,40 @@ def clean_data(df):
     # Rename columns
     df.rename(columns={'posted_datetime': 'posted_date'}, inplace=True)
     
-
     return df
 
 def upload_to_supabase(df, table_name: str):
+    print(f"dataframe size: {len(df)}")
+    df = df.drop_duplicates(subset=['my_id'], keep='last')
+    print(f"Dropped duplicates, {len(df)} jobs left")
+
+    df.to_csv('df.csv', index=False)
 
     response = (
         supabase.table(table_name)
-        .upsert(df.to_dict(orient="records"))
+        .upsert(df.to_dict(orient="records"), on_conflict="my_id")
         .execute()
     )
     return response
 
 def get_job_latest_data(table_name: str) -> pd.DataFrame:
+    current_date = pd.Timestamp.now().strftime('%Y-%m-%d')
+    thirty_days_ago = (pd.Timestamp.now() - pd.Timedelta(days=30)).strftime('%Y-%m-%d')
     response = (
         supabase.table(table_name)
         .select('*')
-        .gte('ingestion_date', '2025-07-01')  
+        .gte('ingestion_date', thirty_days_ago)  
         .execute()
     )
     df = pd.DataFrame(response.data)
+    df = df.sort_values(by='posted_datetime', ascending=False)
+    df.to_csv(f'{table_name}.csv', index=False)
 
     # For incremental ingestion 
     latest_date = df['ingestion_date'].max()
     print(f"Latest ingestion date: {latest_date}")
     # Filter the dataframe to only include the latest date
-    df = df[df['ingestion_date'] == latest_date]
+    df = df[df['posted_datetime'] > latest_date - pd.Timedelta(days=5)]
 
 
     # For recent-batch ingestion 
