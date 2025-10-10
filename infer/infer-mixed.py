@@ -27,8 +27,8 @@ def main():
     df1 = get_job_latest_data(job_sources[0])
     df2 = get_job_latest_data(job_sources[1])
 
-    df1.to_csv('df1.csv', index=False)
-    df2.to_csv('df2.csv', index=False)
+    # df1.to_csv('df1.csv', index=False)
+    # df2.to_csv('df2.csv', index=False)
     print("\nDataset 1 size:", len(df1))
     print("Dataset 2 size:", len(df2))
 
@@ -326,7 +326,7 @@ def upload_to_supabase(df, table_name: str):
     df = df.drop_duplicates(subset=['my_id'], keep='last')
     print(f"Dropped duplicates, {len(df)} jobs left")
 
-    df.to_csv('df.csv', index=False)
+    # df.to_csv('df.csv', index=False)
 
     response = (
         supabase.table(table_name)
@@ -346,7 +346,7 @@ def get_job_latest_data(table_name: str) -> pd.DataFrame:
     )
     df = pd.DataFrame(response.data)
     df = df.sort_values(by='posted_datetime', ascending=False)
-    df.to_csv(f'{table_name}.csv', index=False)
+    # df.to_csv(f'{table_name}.csv', index=False)
 
     # For incremental ingestion 
     latest_date = df['ingestion_date'].max()
