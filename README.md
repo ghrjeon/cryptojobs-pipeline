@@ -2,7 +2,7 @@
 
 Hello! This repository contains the ETL pipeline for <a href="https://github.com/ghrjeon/cryptojobs-aichat" target="_blank" rel="noopener noreferrer"> Crypto Jobs Analytics</a>. The pipeline scrapes job listings from various blockchain and cryptocurrency job boards, processes and enriches the data using ML and LLM, and creates an API endpoint for data retrieval.
 
-Checkout the platform which uses this pipeline: https://rosalyn-cryptojobs-ai.vercel.app/
+Checkout the platform which uses this pipeline: https://cryptojobs-analytics.vercel.app/
 
 ## Stacks used
 <b>Data Collection</b>: Selenium, BeautifulSoup <br>
