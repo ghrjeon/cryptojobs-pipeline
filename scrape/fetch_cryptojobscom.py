@@ -55,7 +55,7 @@ class CryptoJobsComFetcher:
                         os.system("rm /usr/local/bin/chromedriver")
                     
                     self.logger.info("Installing specific ChromeDriver version")
-                    service = Service(ChromeDriverManager(version='144.0.7559.59').install())
+                    service = Service(ChromeDriverManager(version='146.0.7680.164').install())
                 
                 self.logger.info("ChromeDriver setup completed")
                 
