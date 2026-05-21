@@ -315,6 +315,7 @@ def clean_data(df):
     # Add ingestion date and job ids
     df['ingestion_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
     df['job_id'] = df['job_id'].astype(int)
+    df['posted_datetime'] = pd.to_datetime(df['posted_datetime'], errors='coerce').dt.strftime('%Y-%m-%d')
     df['my_id'] = df['posted_datetime'].astype(str) + "-" + df['job_id'].astype(str)
 
     # Replace infinities with None
@@ -330,6 +331,23 @@ def clean_data(df):
     
     return df
 
+def _json_safe_records(df: pd.DataFrame) -> list:
+    records = df.to_dict(orient="records")
+    for record in records:
+        for key, value in record.items():
+            if value is None or (isinstance(value, float) and np.isnan(value)):
+                record[key] = None
+            elif pd.isna(value):
+                record[key] = None
+            elif isinstance(value, (pd.Timestamp, np.datetime64)):
+                record[key] = pd.Timestamp(value).strftime('%Y-%m-%d')
+            elif isinstance(value, (np.integer, np.floating)):
+                record[key] = value.item()
+            elif isinstance(value, np.bool_):
+                record[key] = bool(value)
+    return records
+
+
 def upload_to_supabase(df, table_name: str):
     print(f"dataframe size: {len(df)}")
     df = df.drop_duplicates(subset=['my_id'], keep='last')
@@ -339,7 +357,7 @@ def upload_to_supabase(df, table_name: str):
 
     response = (
         supabase.table(table_name)
-        .upsert(df.to_dict(orient="records"), on_conflict="my_id")
+        .upsert(_json_safe_records(df), on_conflict="my_id")
         .execute()
     )
     return response
