@@ -7,6 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import ast
 import re
+import time
 
 
 # Load environment variables
@@ -31,6 +32,10 @@ def main():
     # df2.to_csv('df2.csv', index=False)
     print("\nDataset 1 size:", len(df1))
     print("Dataset 2 size:", len(df2))
+
+    if df1.empty and df2.empty:
+        print("Both datasets empty — nothing to process")
+        return pd.DataFrame()
 
     # Calculate job similarity
     combined_df = calculate_job_similarity(df1, df2)
@@ -152,27 +157,34 @@ def calculate_job_similarity(df1: pd.DataFrame, df2: pd.DataFrame):
     return combined_df
 
 
-def get_embedding(text):
-    # Get embedding for text
-    response = aiClient.embeddings.create(
-        model="text-embedding-3-small",
-        input=text,
-        encoding_format="float"
-    )
-    return response.data[0].embedding  
+def get_embedding(text, retries=3):
+    for attempt in range(retries):
+        try:
+            response = aiClient.embeddings.create(
+                model="text-embedding-3-small",
+                input=text,
+                encoding_format="float"
+            )
+            return response.data[0].embedding
+        except Exception as e:
+            if attempt < retries - 1:
+                wait = 2 ** attempt
+                print(f"Embedding API error (attempt {attempt + 1}/{retries}): {e}, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                print(f"Embedding API failed after {retries} attempts: {e}")
+                raise
 
 
 def infer_location(df):
 
-    # First handle cases of remote work or unknown location
     df['location_country'] = df['location'].apply(
         lambda x: 'Remote' if isinstance(x, str) and 'remote' in x.lower() 
         else 'Unknown' if pd.isna(x) or x == '' 
         else None
     )
-    df['location_country'] = df['is_remote'].apply(
-        lambda x: 'Remote' if x else None
-    )
+    # Override to Remote when is_remote flag is set, but keep existing values otherwise
+    df.loc[df['is_remote'] == True, 'location_country'] = 'Remote'
     
     # Get unique locations that need AI processing
     locations_to_process = df[df['location_country'].isna()]['location'].unique()
@@ -221,6 +233,7 @@ def infer_location(df):
     
 def infer_job_function(df):
     df['job_function'] = "Unknown"
+    df['title'] = df['title'].fillna("").astype(str)
     df = df.reset_index(drop=True)
 
     # Resorting to key words matching for now because LLM is insufficient and needs some fine tuning! 
@@ -314,7 +327,7 @@ def clean_data(df):
 
     # Add ingestion date and job ids
     df['ingestion_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
-    df['job_id'] = df['job_id'].astype(int)
+    df['job_id'] = pd.to_numeric(df['job_id'], errors='coerce').astype("Int64")
     df['posted_datetime'] = pd.to_datetime(df['posted_datetime'], errors='coerce').dt.strftime('%Y-%m-%d')
     df['my_id'] = df['posted_datetime'].astype(str) + "-" + df['job_id'].astype(str)
 
@@ -331,20 +344,30 @@ def clean_data(df):
     
     return df
 
+def _json_safe_value(value):
+    if value is None:
+        return None
+    if isinstance(value, (list, dict, str, int, bool)):
+        return value
+    if isinstance(value, float):
+        return None if np.isnan(value) else value
+    if isinstance(value, (pd.Timestamp, np.datetime64)):
+        ts = pd.Timestamp(value)
+        return None if pd.isna(ts) else ts.strftime('%Y-%m-%d')
+    if isinstance(value, (np.integer, np.floating)):
+        return None if pd.isna(value) else value.item()
+    if isinstance(value, np.bool_):
+        return bool(value)
+    if pd.api.types.is_scalar(value) and pd.isna(value):
+        return None
+    return value
+
+
 def _json_safe_records(df: pd.DataFrame) -> list:
     records = df.to_dict(orient="records")
     for record in records:
-        for key, value in record.items():
-            if value is None or (isinstance(value, float) and np.isnan(value)):
-                record[key] = None
-            elif pd.isna(value):
-                record[key] = None
-            elif isinstance(value, (pd.Timestamp, np.datetime64)):
-                record[key] = pd.Timestamp(value).strftime('%Y-%m-%d')
-            elif isinstance(value, (np.integer, np.floating)):
-                record[key] = value.item()
-            elif isinstance(value, np.bool_):
-                record[key] = bool(value)
+        for key in record:
+            record[key] = _json_safe_value(record[key])
     return records
 
 
@@ -353,17 +376,21 @@ def upload_to_supabase(df, table_name: str):
     df = df.drop_duplicates(subset=['my_id'], keep='last')
     print(f"Dropped duplicates, {len(df)} jobs left")
 
-    # df.to_csv('df.csv', index=False)
+    if df.empty:
+        print("No records to upload")
+        return None
 
-    response = (
-        supabase.table(table_name)
-        .upsert(_json_safe_records(df), on_conflict="my_id")
-        .execute()
-    )
-    return response
+    records = _json_safe_records(df)
+
+    BATCH_SIZE = 100
+    for i in range(0, len(records), BATCH_SIZE):
+        batch = records[i:i + BATCH_SIZE]
+        supabase.table(table_name).upsert(batch, on_conflict="my_id").execute()
+        print(f"  Uploaded batch {i // BATCH_SIZE + 1} ({len(batch)} records)")
+
+    return None
 
 def get_job_latest_data(table_name: str) -> pd.DataFrame:
-    current_date = pd.Timestamp.now().strftime('%Y-%m-%d')
     thirty_days_ago = (pd.Timestamp.now() - pd.Timedelta(days=30)).strftime('%Y-%m-%d')
     response = (
         supabase.table(table_name)
@@ -372,24 +399,22 @@ def get_job_latest_data(table_name: str) -> pd.DataFrame:
         .execute()
     )
     df = pd.DataFrame(response.data)
-    df = df.sort_values(by='posted_datetime', ascending=False)
-    # df.to_csv(f'{table_name}.csv', index=False)
 
-    # For incremental ingestion 
-    latest_date = pd.to_datetime(df['ingestion_date'].max())
-    print(f"Latest ingestion date: {latest_date}")
-    # Filter the dataframe to only include posts from the last 5 days
-    df['posted_datetime'] = pd.to_datetime(df['posted_datetime'])
-    df = df[df['posted_datetime'] > latest_date - pd.Timedelta(days=5)]
+    if df.empty or 'ingestion_date' not in df.columns:
+        print(f"No data found for {table_name}")
+        return pd.DataFrame()
 
+    df['ingestion_date'] = pd.to_datetime(df['ingestion_date'], errors='coerce')
+    latest_ingestion = df['ingestion_date'].max()
+    print(f"Latest ingestion date: {latest_ingestion}")
 
-    # For recent-batch ingestion 
-    # latest_date = df['ingestion_date'].max()
-    # latest_date = pd.to_datetime(latest_date)
-    # df['ingestion_date'] = pd.to_datetime(df['ingestion_date'])
-    # # Filter the dataframe to only include the latest date
-    # df = df[df['ingestion_date'] >= latest_date - pd.Timedelta(days=10)]
+    # Incremental: only jobs from the most recent scrape batch
+    df = df[df['ingestion_date'] == latest_ingestion]
+    print(f"Rows from latest ingestion batch: {len(df)}")
 
+    if 'posted_datetime' in df.columns:
+        df['posted_datetime'] = pd.to_datetime(df['posted_datetime'], errors='coerce')
+        df = df.sort_values(by='posted_datetime', ascending=False)
 
     return df
 
