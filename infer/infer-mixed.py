@@ -66,6 +66,15 @@ def calculate_job_similarity(df1: pd.DataFrame, df2: pd.DataFrame):
     df1 = df1.reset_index(drop=True)
     df2 = df2.reset_index(drop=True)
 
+    if df1.empty or df2.empty:
+        if df1.empty and df2.empty:
+            print("\nBoth datasets empty; skipping similarity")
+        elif df1.empty:
+            print("\nFirst dataset empty; skipping similarity")
+        else:
+            print("\nSecond dataset empty; skipping similarity")
+        return pd.concat([df1, df2]).reset_index(drop=True)
+
     # Ensure all columns are strings
     df1["title"] = df1["title"].fillna("").astype(str)
     df1["company"] = df1["company"].fillna("").astype(str)
